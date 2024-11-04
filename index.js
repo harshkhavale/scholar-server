@@ -12,7 +12,7 @@ import courseRoutes from "./routes/course.js"; // Import user routes
 import educatorRoutes from "./routes/educator.js"; // Import user routes
 import paymentRoutes from "./routes/payment.js"; // Import user routes
 import authRoutes from "./routes/auth.js"; // Import user routes
-
+import cors from "cors";
 dotenv.config(); // Load environment variables from .env file
 
 // Set up express app
@@ -29,6 +29,11 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(cors({
+  origin: "*",  // Allow requests from any origin
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
+}));
 // Serve static files from 'uploads' folder
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -61,6 +66,6 @@ app.get("/", (req, res) => {
 });
 
 // Start the server
-app.listen(PORT, () => {
+app.listen(PORT,"0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
