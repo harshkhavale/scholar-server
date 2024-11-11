@@ -16,6 +16,9 @@ const courseSchema = new Schema(
       type: String,
       required: true,
     },
+    price: {
+      type: String,
+    },
     educator: {
       type: Schema.Types.ObjectId,
       ref: "Educator", // Reference to the Educator model

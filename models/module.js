@@ -11,11 +11,7 @@ const moduleSchema = new Schema({
     type: String,
     required: true
   },
-  course: {
-    type: Schema.Types.ObjectId,
-    ref: 'Course',  // Reference to the Course model
-    required: true
-  },
+  
   resources: {
     doc: {
       type: String,  // URL or path to course-related documents
