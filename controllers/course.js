@@ -94,4 +94,75 @@ export const deleteCourse = async (req, res) => {
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
+  
+};
+export const getCourseModules = async (req, res) => {
+  try {
+    const courseId = req.params.id;
+
+    // Find the course by ID and populate the modules
+    const courseWithModules = await Course.findById(courseId).populate('modules');
+
+    if (!courseWithModules) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+
+    // Extract just the modules array
+    const { modules } = courseWithModules;
+
+    // Return the modules array along with the total number of modules
+    res.status(200).json({
+      total: modules.length,  // Total number of modules
+      modules: modules        // The array of modules
+    });
+  } catch (error) {
+    console.error('Error fetching course with modules:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Add module to course
+export const addModuleToCourse = async (req, res) => {
+  try {
+    const { id, moduleId } = req.params;
+
+    // Find the course by ID
+    const course = await Course.findById(id);
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    // Check if module is already added
+    if (course.modules.includes(moduleId)) {
+      return res.status(400).json({ error: 'Module already added to the course' });
+    }
+
+    // Add module to the course's modules array
+    course.modules.push(moduleId);
+    await course.save();
+
+    res.status(200).json({ message: 'Module added successfully', course });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+// Remove module from course
+export const removeModuleFromCourse = async (req, res) => {
+  try {
+    const { id, moduleId } = req.params;
+
+    // Find the course by ID
+    const course = await Course.findById(id);
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    // Remove the module from the course's modules array
+    course.modules = course.modules.filter(id => id.toString() !== moduleId);
+    await course.save();
+
+    res.status(200).json({ message: 'Module removed successfully', course });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 };
