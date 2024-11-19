@@ -9,8 +9,7 @@ const userSchema = new Schema({
   },
   fullName: {
     type: String,
-    required: true,
-    trim: true
+    required: true
   },
   email: {
     type: String,
@@ -23,7 +22,6 @@ const userSchema = new Schema({
   },
   plan: {
     type: String,  // E.g., 'free', 'premium', 'enterprise'
-    required: true,
     enum: ['free', 'premium', 'enterprise'],  // Optional: restrict to specific values
     default: 'free'
   },
