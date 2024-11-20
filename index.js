@@ -45,7 +45,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/modules", moduleRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/educators", educatorRoutes);
-app.use("/api/payment", paymentRoutes);
+app.use("/api/payments", paymentRoutes);
 
 // Connect to MongoDB
 mongoose
