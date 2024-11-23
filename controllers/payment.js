@@ -1,5 +1,6 @@
 // controllers/paymentController.js
 import Payment from "../models/payment.js";
+import stripe from "../utils/stripe.js";
 
 // Create a new payment
 export const createPayment = async (req, res) => {

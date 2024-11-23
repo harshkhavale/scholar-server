@@ -66,7 +66,7 @@ export const uploadModuleResources = upload.fields([{ name: 'doc', maxCount: 1 }
 // Get all modules
 export const getAllModules = async (req, res) => {
   try {
-    const modules = await Module.find().populate('course');  // Populate course details
+    const modules = await Module.find();  // Populate course details
     res.status(200).json(modules);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -76,7 +76,7 @@ export const getAllModules = async (req, res) => {
 // Get a module by ID
 export const getModuleById = async (req, res) => {
   try {
-    const module = await Module.findById(req.params.id).populate('course');
+    const module = await Module.findById(req.params.id);
     if (!module) {
       return res.status(404).json({ error: 'Module not found' });
     }
