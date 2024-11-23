@@ -13,11 +13,13 @@ import educatorRoutes from "./routes/educator.js"; // Import user routes
 import paymentRoutes from "./routes/payment.js"; // Import user routes
 import authRoutes from "./routes/auth.js"; // Import user routes
 import cors from "cors";
+import morgan from "morgan";
 dotenv.config(); // Load environment variables from .env file
 
 // Set up express app
 const app = express();
 const PORT = process.env.PORT || 5001;
+app.use(morgan('combined')); 
 
 // Middleware
 app.use(express.json()); // Parse JSON bodies

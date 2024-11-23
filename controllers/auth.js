@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
-import { createUser } from "./user.js";
+import Educator from "../models/educator.js";
 
 // Registration API
 export const registerUser = async (req, res) => {
@@ -28,7 +28,16 @@ export const registerUser = async (req, res) => {
 
     // Save the new user to the database
     const savedUser = await newUser.save();
+    if (userType === 'educator') {
+      const newEducator = new Educator({
+        user_id: savedUser._id,
+        fullName
+       
+      });
 
+      // Save the educator after creating it
+      await newEducator.save();
+    }
     // Respond with the newly created user
     return res.status(201).json({ message: 'User registered successfully', user: savedUser });
   } catch (error) {

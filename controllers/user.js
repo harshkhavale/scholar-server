@@ -48,6 +48,16 @@ export const createUser = async (req, res) => {
       });
 
       const savedUser = await newUser.save();
+      if (userType === 'educator') {
+        const newEducator = new Educator({
+          user_id: savedUser._id,
+          fullName
+         
+        });
+
+        // Save the educator after creating it
+        await newEducator.save();
+      }
       res.status(201).json(savedUser);  // Return created user
     } catch (error) {
       res.status(400).json({ error: error.message });
