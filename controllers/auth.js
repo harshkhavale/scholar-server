@@ -47,22 +47,20 @@ export const registerUser = async (req, res) => {
 };
 
 
-// Login API
+
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
     // Check for existing user
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).populate("enrolls");
     if (!user) {
-      // Only send one response
       return res.status(400).json({ message: "Invalid credentials." });
     }
 
     // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      // Only send one response
       return res.status(400).json({ message: "Invalid credentials." });
     }
 
@@ -71,8 +69,8 @@ export const loginUser = async (req, res) => {
       expiresIn: "1h",
     });
 
-    // Return token and user info
-    return res.status(200).json({
+    // Prepare response object
+    const response = {
       token,
       user: {
         id: user._id,
@@ -81,11 +79,39 @@ export const loginUser = async (req, res) => {
         plan: user.plan,
         userType: user.userType,
         profilePic: user.profilePic,
+        enrolls: user.enrolls.map((enroll) => enroll._id),
       },
-    });
+    };
+
+    // If user is an educator, fetch educator details
+    if (user.userType === "educator") {
+      const educator = await Educator.findOne({ user_id: user._id }).populate("courses");
+      if (educator) {
+        response.educator = {
+          id: educator._id,
+          fullName: educator.fullName || user.fullName,
+          description: educator.description,
+          profileImage: educator.profile_image,
+          backgroundImage: educator.background_image,
+          qualifications: educator.qualifications,
+          socialLinks: educator.social_links,
+          specialties: educator.specialties,
+          contactEmail: educator.contact_email,
+          courses: educator.courses.map((course) => ({
+            id: course._id,
+            title: course.title,
+            description: course.description,
+            thumbnail: course.thumbnail,
+            price: course.price,
+          })),
+        };
+      }
+    }
+
+    // Return response
+    return res.status(200).json(response);
   } catch (error) {
     console.error(error);
-    // Only send one response
     return res.status(500).json({ error: "Internal server error" });
   }
 };

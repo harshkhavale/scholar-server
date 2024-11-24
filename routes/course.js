@@ -1,6 +1,6 @@
 // routes/courseRoutes.js
 import express from 'express';
-import { createCourse, getAllCourses, getCourseById, updateCourse, deleteCourse, addModuleToCourse, removeModuleFromCourse, getCourseModules } from '../controllers/course.js';
+import { createCourse, getAllCourses, getCourseById, updateCourse, deleteCourse, addModuleToCourse, removeModuleFromCourse, getCourseModules, getCoursesByEducator } from '../controllers/course.js';
 
 const router = express.Router();
 
@@ -13,5 +13,6 @@ router.delete('/:id', deleteCourse);  // DELETE request to delete a specific cou
 router.get('/:id/modules', getCourseModules);
 router.put('/:id/modules/:moduleId', addModuleToCourse);
 router.delete('/:id/modules/:moduleId', removeModuleFromCourse);
+router.get("/educator/:educatorId", getCoursesByEducator);
 
 export default router;

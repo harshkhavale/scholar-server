@@ -97,18 +97,23 @@ export const updateUser = async (req, res) => {
     }
 
     const userId = req.params.id;
-    const profilePicPath = req.file ? req.file.filename : null;  // Store new filename if uploaded
+    const profilePicPath = req.file ? req.file.filename : null;
+
+    let enrolls = req.body.enrolls; // Expecting comma-separated values
+    if (enrolls) {
+      enrolls = enrolls.split(',').map(id => id.trim()); // Convert to an array of IDs
+    }
 
     const updateData = {
       fullName: req.body.fullName,
-      email: req.body.email, // Update email
-      password: req.body.password ? await bcrypt.hash(req.body.password, 10) : undefined,  // Hash new password if provided
+      email: req.body.email,
+      password: req.body.password ? await bcrypt.hash(req.body.password, 10) : undefined,
       plan: req.body.plan,
       userType: req.body.userType,
-      profilePic: profilePicPath ? profilePicPath : req.body.profilePic  // Keep old if no new pic uploaded
+      profilePic: profilePicPath || req.body.profilePic,
+      enrolls: enrolls || undefined, // Set only if provided
     };
 
-    // Remove undefined properties from updateData
     Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key]);
 
     try {
@@ -122,6 +127,8 @@ export const updateUser = async (req, res) => {
     }
   });
 };
+
+
 
 // Delete a user by ID
 export const deleteUser = async (req, res) => {
@@ -144,6 +151,23 @@ export const deleteUser = async (req, res) => {
     }
 
     res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+// Get all enrolled courses of a user
+export const getUserEnrolls = async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    // Fetch user and populate the 'enrolls' field with related courses
+    const user = await User.findById(userId).populate('enrolls');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Return the enrolled courses
+    res.json({ enrolledCourses: user.enrolls });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

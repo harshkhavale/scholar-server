@@ -7,7 +7,7 @@ import { fileURLToPath } from "url";
 // Configure Multer for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/educators"); // Folder for educator profile/background images
+    cb(null, "uploads/profiles"); // Folder for educator profile/background images
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -112,7 +112,7 @@ export const deleteEducator = async (req, res) => {
     // Delete associated images
     const deleteFile = (filePath) => {
       if (filePath) {
-        const fullPath = path.join(path.dirname(fileURLToPath(import.meta.url)), "../uploads/educators", filePath);
+        const fullPath = path.join(path.dirname(fileURLToPath(import.meta.url)), "../uploads/profiles", filePath);
         fs.unlink(fullPath, (err) => {
           if (err) console.error("Failed to delete file:", err);
         });
