@@ -198,3 +198,35 @@ export const getCoursesByEducator = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+export const getCoursesByTopic = async (req, res) => {
+  try {
+    // Extract topics from query parameters
+    const { topics } = req.query;
+
+    if (!topics) {
+      return res.status(400).json({ error: "Topics query parameter is required." });
+    }
+
+    // Convert topics to an array if it's a single string
+    const topicArray = Array.isArray(topics) ? topics : topics.split(",");
+
+    // Ensure topics are strings and not ObjectIds
+    if (topicArray.some((topic) => typeof topic !== 'string')) {
+      return res.status(400).json({ error: "Topics must be an array of strings." });
+    }
+
+    // Fetch courses matching the topics and limit the results to 4
+    const courses = await Course.find({
+      topics: { $in: topicArray },  // Match courses that contain any of the topics in the query
+    })
+      .populate("educator", "fullName") // Optional: populate educator's full name
+      .limit(4);
+
+    // Return the courses in the response
+    res.status(200).json(courses);
+  } catch (error) {
+    console.error("Error fetching courses by topic:", error);
+    res.status(500).json({ error: error.message });
+  }
+};

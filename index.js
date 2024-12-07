@@ -12,6 +12,8 @@ import courseRoutes from "./routes/course.js"; // Import user routes
 import educatorRoutes from "./routes/educator.js"; // Import user routes
 import paymentRoutes from "./routes/payment.js"; // Import user routes
 import authRoutes from "./routes/auth.js"; // Import user routes
+import reviewRoutes from "./routes/review.js"; // Import user routes
+
 import cors from "cors";
 import morgan from "morgan";
 dotenv.config(); // Load environment variables from .env file
@@ -48,6 +50,7 @@ app.use("/api/modules", moduleRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/educators", educatorRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 // Connect to MongoDB
 mongoose

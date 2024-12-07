@@ -5,6 +5,8 @@ import fs from 'fs';
 import multer from 'multer';
 import { fileURLToPath } from 'url';
 import bcrypt from 'bcrypt';
+import mongoose from 'mongoose';
+import Course from '../models/course.js';  // Import the User model
 
 // Configure Multer for file uploads
 const storage = multer.diskStorage({
@@ -170,5 +172,75 @@ export const getUserEnrolls = async (req, res) => {
     res.json({ enrolledCourses: user.enrolls });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+export const enrollCourse = async (req, res) => {
+  const { userId, courseId } = req.body;
+
+  // Validate userId and courseId
+  if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(courseId)) {
+    return res.status(400).json({ message: "Invalid user or course ID." });
+  }
+
+  try {
+    // Check if the course exists
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ message: "Course not found." });
+    }
+
+    // Update user's enrollments
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $addToSet: { enrolls: courseId } },  // $addToSet avoids duplicates
+      { new: true, runValidators: true }
+    ).populate("enrolls", "title description");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    return res.status(200).json({
+      message: "User successfully enrolled in the course.",
+      enrolls: user.enrolls,  // Return updated list of enrollments
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+};
+export const unrollCourse = async (req, res) => {
+  const { userId, courseId } = req.body;
+
+  // Validate userId and courseId
+  if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(courseId)) {
+    return res.status(400).json({ message: "Invalid user or course ID." });
+  }
+
+  try {
+    // Check if the course exists
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ message: "Course not found." });
+    }
+
+    // Remove the course from user's enrollments
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $pull: { enrolls: courseId } },  // $pull removes the course from the array
+      { new: true, runValidators: true }
+    ).populate("enrolls", "title description");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    return res.status(200).json({
+      message: "User successfully unenrolled from the course.",
+      enrolls: user.enrolls,  // Return updated list of enrollments
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error." });
   }
 };

@@ -2,49 +2,70 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 import Educator from "../models/educator.js";
+import path from 'path';
+import multer from 'multer';
 
-// Registration API
-export const registerUser = async (req, res) => {
-  const { fullName, email, password, plan, userType } = req.body;
+// Configure Multer for file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/profiles'); // Folder where files will be saved
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
 
-  try {
-    // Check if the user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists.' });
+const upload = multer({ storage: storage });
+
+// Register User function with file upload
+export const registerUser = (req, res) => {
+  upload.single('profilePic')(req, res, async function (err) {
+    if (err) {
+      return res.status(400).json({ error: 'File upload failed.' });
     }
 
-    // Hash the password before saving it to the database
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const { fullName, email, password, plan, userType } = req.body;
+    const profilePicPath = req.file ? req.file.filename : null; // Optional profile picture
 
-    // Create a new User document
-    const newUser = new User({
-      fullName,
-      email,
-      password: hashedPassword,  // Store the hashed password
-      plan,
-      userType
-    });
+    try {
+      // Check if the user already exists
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({ message: 'User already exists.' });
+      }
 
-    // Save the new user to the database
-    const savedUser = await newUser.save();
-    if (userType === 'educator') {
-      const newEducator = new Educator({
-        user_id: savedUser._id,
-        fullName
-       
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create a new user
+      const newUser = new User({
+        fullName,
+        email,
+        password: hashedPassword,
+        plan,
+        userType,
+        profilePic: profilePicPath // Include profile picture if available
       });
 
-      // Save the educator after creating it
-      await newEducator.save();
+      const savedUser = await newUser.save();
+
+      // If userType is 'educator', create an educator record
+      if (userType === 'educator') {
+        const newEducator = new Educator({
+          user_id: savedUser._id,
+          fullName
+        });
+        await newEducator.save();
+      }
+
+      res.status(201).json({ message: 'User registered successfully', user: savedUser });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
     }
-    // Respond with the newly created user
-    return res.status(201).json({ message: 'User registered successfully', user: savedUser });
-  } catch (error) {
-    // If any error occurs during user creation, return the error
-    return res.status(400).json({ error: error.message });
-  }
+  });
 };
+
 
 
 
